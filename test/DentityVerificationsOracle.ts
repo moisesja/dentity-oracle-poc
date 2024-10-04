@@ -31,7 +31,9 @@ describe("DentityVerificationsOracle", function () {
     it("Deployer must be the owner that will get compensated", async function () {
       const { contract, owner } = await deployOracle();
 
-      expect(contract.read.owner).to.equal(owner);
+      expect((await contract.read.owner()).toUpperCase()).to.equal(
+        owner.account.address.toUpperCase()
+      );
     });
   });
 
@@ -40,7 +42,10 @@ describe("DentityVerificationsOracle", function () {
       const { contract } = await deployOracle();
       const ensName = "moisesj.eth";
 
-      await contract.write.requestDentityVerification([ensName]);
+      await contract.write.requestDentityVerification([
+        ensName,
+        contract.address,
+      ]);
 
       // get the withdrawal events in the latest block
       const events = await contract.getEvents.DentityVerificationRequested();
