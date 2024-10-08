@@ -9,23 +9,43 @@ contract DentityVerificationsOracle {
 
     address[] private _trustedOracleNodes;
 
-    // Event emitted to signal the Oracle Node to fetch the verification data
-    event DentityVerificationRequested(string ensName, address clientContract);
+    /**
+     * @dev Event emitted to signal the Oracle Node to fetch the verification data.
+     * @param ensName The ENS name for which the verification is requested.
+     * @param clientAccount The address of the client account requesting the verification.
+     * @param callerContract The address of the contract that called the verification request.
+     */
+    event DentityVerificationRequested(string ensName, address clientAccount, address callerContract);
 
     // Dictionary of verification requests keyed on the client contract address
     mapping(address => VerificationRequest) private _verificationRequests;
 
     struct VerificationRequest {
         string ensName;
+        address clientAccount;
         address callerContract;
         bool isPending;
     }
 
     struct VerificationResponse {
         string ensName;
-        string errorCode;
-        string verifiablePresent;
+        uint256 errorCode;
+        string verifiablePresentation;
         address callerContract;
+    }
+
+    /// @notice Checks if the given address is a trusted oracle node. This routine has a complexity of O(n) but we don't expect to have many trusted oracle nodes.
+    /// @param caller The address to check.
+    /// @return bool True if the address is a trusted oracle node, false otherwise.
+    function isTrustedOracleNode(address caller) public view returns (bool) {
+        
+        for (uint index = 0; index < _trustedOracleNodes.length; index++) {
+            if (_trustedOracleNodes[index] == caller) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*
@@ -80,29 +100,38 @@ contract DentityVerificationsOracle {
 
         VerificationRequest memory request = VerificationRequest(
             ensName,
+            msg.sender,
             clientContract,
             true
         );
+
         _verificationRequests[clientContract] = request;
 
         // Emit event to signal the Oracle Node to fetch the verification data
-        emit DentityVerificationRequested(ensName, clientContract);
+        emit DentityVerificationRequested(request.ensName, request.clientAccount, request.callerContract);
     }
 
-    function processOracleNodeResponse(VerificationResponse memory response) public view {
+    bytes4 private constant PROCESS_VERIFICATION_SELECTOR = bytes4(keccak256(bytes('processVerificationResult(uint256,string,bool)')));
 
-        // TODO: Add checks on the caller and make sure we trust it
+    function processOracleNodeResponse(VerificationResponse memory response) public {
+ 
+        require(isTrustedOracleNode(msg.sender), "Caller is not a trusted Oracle Node");
 
         // Does request exist
         if (bytes(_verificationRequests[response.callerContract].ensName).length != 0) {
+            
             VerificationRequest storage request = _verificationRequests[response.callerContract];
 
             if (
-                request.isPending &&
-                keccak256(abi.encodePacked(response.errorCode)) ==
-                keccak256(abi.encodePacked("0"))
+                request.isPending 
+                //&&
+                //keccak256(abi.encodePacked(response.errorCode)) ==
+                //keccak256(abi.encodePacked("0")
             ) {
-                // Store the verification data in the client contract
+                (bool success, ) = response.callerContract.call(
+                    abi.encodeWithSelector(PROCESS_VERIFICATION_SELECTOR, response.errorCode, response.verifiablePresentation, false));
+
+                require(success, "Low-level call failed");
             } else {
                 // TODO: Refund the client
                 // Raise an event to signal the client contract
