@@ -206,7 +206,7 @@ describe("DentityVerificationsOracle", function () {
       ).to.be.rejectedWith("Caller is not a trusted Oracle Node");
     });
 
-    it("processOracleNodeResponse", async function () {
+    it("Process Oracle Node Response", async function () {
       const {
         oracleContract,
         clientContract,
