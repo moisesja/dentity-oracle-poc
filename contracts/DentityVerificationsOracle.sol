@@ -5,10 +5,32 @@ import "hardhat/console.sol";
 import "./IDentityClient.sol";
 
 contract DentityVerificationsOracle {
-    address payable public owner;
+    
+    /// @dev Struct to hold the verification request data.
+    struct VerificationRequest {
+        string ensName;
+        address clientAccount;
+        address callerContract;
+        bool isPending;
+    }
+    /// @dev Struct to hold the verification response data.
+    struct VerificationResponse {
+        string ensName;
+        uint256 errorCode;
+        string verifiablePresentation;
+        address callerContract;
+    }
 
+    // Dictionary of verification requests keyed on the client contract address
+    mapping(address => VerificationRequest) private _verificationRequests;
+
+    // List of trusted Oracle Nodes
     address[] private _trustedOracleNodes;
-
+    
+    // Selector for the processVerificationResult function in the client contract
+    bytes4 private constant PROCESS_VERIFICATION_SELECTOR = bytes4(keccak256(bytes('processVerificationResult(uint256,string,bool)')));
+    bytes4 private constant DENTITY_CLIENT_INTERFACE_ID = type(IDentityClient).interfaceId;
+    
     /**
      * @dev Event emitted to signal the Oracle Node to fetch the verification data.
      * @param ensName The ENS name for which the verification is requested.
@@ -17,22 +39,8 @@ contract DentityVerificationsOracle {
      */
     event DentityVerificationRequested(string ensName, address clientAccount, address callerContract);
 
-    // Dictionary of verification requests keyed on the client contract address
-    mapping(address => VerificationRequest) private _verificationRequests;
-
-    struct VerificationRequest {
-        string ensName;
-        address clientAccount;
-        address callerContract;
-        bool isPending;
-    }
-
-    struct VerificationResponse {
-        string ensName;
-        uint256 errorCode;
-        string verifiablePresentation;
-        address callerContract;
-    }
+    // The address that deploys and manages this contract.
+    address payable public owner;
 
     /// @notice Checks if the given address is a trusted oracle node. This routine has a complexity of O(n) but we don't expect to have many trusted oracle nodes.
     /// @param caller The address to check.
@@ -48,7 +56,7 @@ contract DentityVerificationsOracle {
         return false;
     }
 
-    /*
+    
     // Check if the contract implements the IDentityClient interface
     function isValidClient(
         address contractAddress
@@ -63,7 +71,7 @@ contract DentityVerificationsOracle {
             return abi.decode(result, (bool));
         }
         return false;
-    }*/
+    }
 
     // TODO: Add method to add trusted oracles. Only the owner can add trusted oracles
 
@@ -87,12 +95,12 @@ contract DentityVerificationsOracle {
         address clientContract
     ) public payable {
         // TODO: Check for parameters
-        /*
+        
         // TODO: Check that the contract implements the IDentityClient interface
         require(
             isValidClient(clientContract),
             "Contract must implement IDentityClient"
-        );*/
+        );
 
         // TODO: Check that the fee is enough
 
@@ -111,15 +119,13 @@ contract DentityVerificationsOracle {
         emit DentityVerificationRequested(request.ensName, request.clientAccount, request.callerContract);
     }
 
-    bytes4 private constant PROCESS_VERIFICATION_SELECTOR = bytes4(keccak256(bytes('processVerificationResult(uint256,string,bool)')));
-
     function processOracleNodeResponse(VerificationResponse memory response) public {
  
         require(isTrustedOracleNode(msg.sender), "Caller is not a trusted Oracle Node");
 
         // Does request exist
         if (bytes(_verificationRequests[response.callerContract].ensName).length != 0) {
-            
+
             VerificationRequest storage request = _verificationRequests[response.callerContract];
 
             if (

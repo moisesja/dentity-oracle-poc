@@ -9,11 +9,11 @@ abstract contract DentityClient is IDentityClient {
         uint256 errorCode,
         string memory credential,
         bool isGated
-    ) external override {}
+    ) external virtual override {}
 
     function supportsInterface(
         bytes4 interfaceId
-    ) external pure override returns (bool) {
+    ) external pure virtual override returns (bool) {
         return interfaceId == type(IDentityClient).interfaceId;
     }
 }
