@@ -147,6 +147,65 @@ describe("DentityVerificationsOracle", function () {
   });
 
   describe("Process Responses", function () {
+    it("Invalid Oracle Node", async function () {
+      const {
+        oracleContract,
+        clientContract,
+        oracleNodeAccount,
+        requesterAccount,
+        unknownAccount,
+      } = await loadFixture(deployOracle);
+
+      // No failures expected
+      await oracleContract.write.addTrustedOracle([
+        oracleNodeAccount.account.address,
+      ]);
+
+      const ensName = "moisesj.eth";
+
+      const requesterAccountContract = await hre.viem.getContractAt(
+        VERIFICATIONS_ORACLE,
+        oracleContract.address,
+        { client: { wallet: requesterAccount } }
+      );
+
+      await requesterAccountContract.write.requestDentityVerification([
+        ensName,
+        // Compliant contract address
+        clientContract.address,
+      ]);
+
+      // Get the raised events in the latest block
+      const events =
+        await oracleContract.getEvents.DentityVerificationRequested();
+
+      expect(events).to.have.lengthOf(1);
+      expect(events[0].args.ensName).to.equal(ensName);
+      expect(events[0].args.clientAccount?.toLowerCase()).to.equal(
+        requesterAccount.account.address.toLowerCase()
+      );
+      expect(events[0].args.callerContract?.toLowerCase()).to.equal(
+        clientContract.address.toLowerCase()
+      );
+
+      const oracleNodeAccountContract = await hre.viem.getContractAt(
+        VERIFICATIONS_ORACLE,
+        oracleContract.address,
+        { client: { wallet: unknownAccount } }
+      );
+
+      await expect(
+        oracleNodeAccountContract.write.processOracleNodeResponse([
+          {
+            ensName,
+            errorCode: 0n,
+            verifiablePresentation: "VP Token",
+            callerContract: clientContract.address,
+          },
+        ])
+      ).to.be.rejectedWith("Caller is not a trusted Oracle Node");
+    });
+
     it("processOracleNodeResponse", async function () {
       const {
         oracleContract,
