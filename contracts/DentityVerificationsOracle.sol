@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.26;
 
 import "hardhat/console.sol";
 import "./IDentityClient.sol";
@@ -75,7 +75,7 @@ contract DentityVerificationsOracle {
 
     // TODO: Add method to add trusted oracles. Only the owner can add trusted oracles
 
-    constructor() payable {
+    constructor() {
         // Ensure the deployer is the same as the account that will collect the funds
         owner = payable(msg.sender);
     }
@@ -93,7 +93,7 @@ contract DentityVerificationsOracle {
     function requestDentityVerification(
         string calldata ensName,
         address clientContract
-    ) public payable {
+    ) external payable {
         // TODO: Check for parameters
         
         // TODO: Check that the contract implements the IDentityClient interface

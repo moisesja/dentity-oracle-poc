@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.26;
 
 import "hardhat/console.sol";
 import "./DentityClient.sol";
@@ -24,12 +24,10 @@ contract TestDentityClient is DentityClient {
         string memory credential,
         bool isGated
     ) external override {
-
-        DentityVerificationsOracle(ORACLE_ADDRESS).requestDentityVerification("test.ens", address(this));
         console.log("TestDentityClient.processVerificationResult called");
     }
 
-    function invokeOracle() public {
-        console.log("TestDentityClient.invokeOracle called");
+    function invokeOracle() public payable {
+        DentityVerificationsOracle(ORACLE_ADDRESS).requestDentityVerification("test.ens", address(this));
     }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.26;
 
 /// @title IDentityClient Interface
 /// @notice Any Dentity Oracle client contract must implement this interface.
