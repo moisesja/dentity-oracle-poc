@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-viem");
 
 // NEVER record important private keys in your code - this is for demo purposes
 const SEPOLIA_TESTNET_PRIVATE_KEY = "";
