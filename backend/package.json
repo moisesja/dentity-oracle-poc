@@ -1,0 +1,22 @@
+{
+  "name": "oracle-node",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^22.7.5",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "viem": "^2.21.21",
+    "dotenv": "16.4.5"
+  }
+}
