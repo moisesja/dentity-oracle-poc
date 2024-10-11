@@ -56,7 +56,6 @@ contract DentityVerificationsOracle {
         return false;
     }
 
-    
     // Check if the contract implements the IDentityClient interface
     function isValidClient(
         address contractAddress
@@ -101,6 +100,8 @@ contract DentityVerificationsOracle {
             isValidClient(clientContract),
             "Contract must implement IDentityClient"
         );
+
+        console.log("requestDentityVerification called");
 
         // TODO: Check that the fee is enough
 

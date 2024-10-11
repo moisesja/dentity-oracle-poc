@@ -27,7 +27,7 @@ contract TestDentityClient is DentityClient {
         console.log("TestDentityClient.processVerificationResult called");
     }
 
-    function invokeOracle() public payable {
-        DentityVerificationsOracle(ORACLE_ADDRESS).requestDentityVerification("test.ens", address(this));
+    function invokeOracle(string memory ensName) public payable {
+        DentityVerificationsOracle(ORACLE_ADDRESS).requestDentityVerification(ensName, address(this));
     }
 }

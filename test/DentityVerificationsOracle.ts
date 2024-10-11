@@ -227,11 +227,8 @@ describe("DentityVerificationsOracle", function () {
         { client: { wallet: requesterAccount } }
       );
 
-      await requesterAccountContract.write.requestDentityVerification([
-        ensName,
-        // Compliant contract address
-        clientContract.address,
-      ]);
+      // Use the actual client contract
+      await clientContract.write.invokeOracle([ensName]);
 
       // Get the raised events in the latest block
       const events =
@@ -240,7 +237,7 @@ describe("DentityVerificationsOracle", function () {
       expect(events).to.have.lengthOf(1);
       expect(events[0].args.ensName).to.equal(ensName);
       expect(events[0].args.clientAccount?.toLowerCase()).to.equal(
-        requesterAccount.account.address.toLowerCase()
+        clientContract.address.toLowerCase()
       );
       expect(events[0].args.callerContract?.toLowerCase()).to.equal(
         clientContract.address.toLowerCase()
