@@ -5,7 +5,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 const testDentityClientModule = buildModule("TestDentityClientModule", (m) => {
   const client = m.contract("TestDentityClient", [
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "0x6288d5904c631EE60d59E050a3ec2eD2fF9E64a9",
   ]);
 
   return { client };
