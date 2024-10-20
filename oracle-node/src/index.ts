@@ -6,22 +6,25 @@ import {
   GetBlockNumberErrorType,
   Hex,
 } from "viem";
-import { localhost } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 import { dentityVerificationsOracleAbi, testDentityClientAbi } from "./abi";
 import {
   oracleOwnerWalletClient,
   oracleNodeWalletClient,
   oracleCallerWalletClient,
 } from "./wallet-clients";
+import Verifications from "./verifications";
 
 // Load environment variables from .env file
 dotenv.config();
 
-// Immediately Invoked Function Expression (IIFE)
-(async () => {
+async function main(ensName: string) {
   try {
+    //console.log("Invoking Client for: ", ensName);
+    console.log("Oracle Node started");
+
     const client = createPublicClient({
-      chain: localhost,
+      chain: arbitrumSepolia,
       transport: http(process.env.CHAIN_URL),
     });
 
@@ -54,26 +57,30 @@ dotenv.config();
       console.log("Trusted Oracle Node added");
     }
 
-    /*
-    const events =
-      await oracleContractByNode.getEvents.DentityVerificationRequested();
-    console.log("events", events);
-*/
+    const dentityVerificationsService = Verifications.getInstance();
 
     const unwatch =
       oracleContractByNode.watchEvent.DentityVerificationRequested({
         onLogs: (logs) => {
           logs.forEach((log) => {
-            console.log("log", log);
+            const message = (log as any).args;
+            console.log("log", message);
 
+            const verifications =
+              dentityVerificationsService.getDentityVerifications(
+                message.ensName
+              );
+
+            console.log("verifications", verifications);
+            /*
             oracleContractByNode.write.processOracleNodeResponse([
               {
-                ensName: "caca",
+                ensName: "moisesj.eth",
                 errorCode: 0,
                 verifiablePresentation: "VP Token",
                 callerContract: process.env.CLIENT_CONTRACT_ADDRESS,
               },
-            ]);
+            ]);*/
           });
         },
       });
@@ -86,7 +93,7 @@ dotenv.config();
       client: oracleCallerWalletClient,
     });
 
-    const result = await callerContract.write.invokeOracle(["moisesj.eth"]);
+    //const result = await callerContract.write.invokeOracle([ensName]);
 
     // Your asynchronous code here
     console.log("IIFE block executed");
@@ -94,4 +101,9 @@ dotenv.config();
     const error = e as GetBlockNumberErrorType;
     console.error("Error:", error);
   }
+}
+
+(async function () {
+  const args = process.argv.slice(2);
+  await main(args[0]);
 })();

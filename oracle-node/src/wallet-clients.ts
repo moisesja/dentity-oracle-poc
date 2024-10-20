@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { publicActions, http, Hex, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { localhost } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 
 dotenv.config();
 
@@ -23,19 +23,19 @@ const callerAccount = privateKeyToAccount(callerKey as Hex);
 
 const oracleOwnerWalletClient = createWalletClient({
   account: ownerAccount,
-  chain: localhost,
+  chain: arbitrumSepolia,
   transport: http(process.env.CHAIN_URL),
 }).extend(publicActions);
 
 const oracleNodeWalletClient = createWalletClient({
   account: nodeAccount,
-  chain: localhost,
+  chain: arbitrumSepolia,
   transport: http(process.env.CHAIN_URL),
 }).extend(publicActions);
 
 const oracleCallerWalletClient = createWalletClient({
   account: callerAccount,
-  chain: localhost,
+  chain: arbitrumSepolia,
   transport: http(process.env.CHAIN_URL),
 }).extend(publicActions);
 
